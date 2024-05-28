@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1094682048749",
+    "firebase_url": "https://drive-ea-default-rtdb.firebaseio.com",
+    "project_id": "drive-ea",
+    "storage_bucket": "drive-ea.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1094682048749:android:6005caf68c6ed6cf54b4e4",
+        "android_client_info": {
+          "package_name": "com.example.rider_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWWeY-wQWC0DJMGhopUQDWqDevHv957cY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
