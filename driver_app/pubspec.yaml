@@ -52,6 +52,8 @@ dependencies:
   permission_handler: ^11.3.1
   fluttertoast: ^8.2.5
   firebase_messaging: ^14.9.4
+  assets_audio_player: ^3.1.1
+  maps_toolkit: ^3.0.0
 
 dev_dependencies:
   flutter_test:

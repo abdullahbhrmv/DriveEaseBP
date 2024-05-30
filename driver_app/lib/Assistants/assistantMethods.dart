@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -13,32 +14,32 @@ import 'package:driver_app/Models/directDetails.dart';
 import 'package:driver_app/configMap.dart';
 
 class AssistantMethods {
-  static Future<String> searchCoordinatedAddress(
-      Position position, context) async {
-    String placeAddress = "";
-    String st1, st2, st3, st4;
-    String url =
-        "https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$mapKey";
+  // static Future<String> searchCoordinatedAddress(
+  //     Position position, context) async {
+  //   String placeAddress = "";
+  //   String st1, st2, st3, st4;
+  //   String url =
+  //       "https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$mapKey";
 
-    var response = await RequestAssistant.getRequest(url);
+  //   var response = await RequestAssistant.getRequest(url);
 
-    if (response != "failed") {
-      st1 = response["results"][0]["address_components"][3]["long_name"];
-      st2 = response["results"][0]["address_components"][4]["long_name"];
-      st3 = response["results"][0]["address_components"][5]["long_name"];
-      st4 = response["results"][0]["address_components"][6]["long_name"];
-      placeAddress = "$st1, $st2, $st3, $st4";
+  //   if (response != "failed") {
+  //     st1 = response["results"][0]["address_components"][3]["long_name"];
+  //     st2 = response["results"][0]["address_components"][4]["long_name"];
+  //     st3 = response["results"][0]["address_components"][5]["long_name"];
+  //     st4 = response["results"][0]["address_components"][6]["long_name"];
+  //     placeAddress = "$st1, $st2, $st3, $st4";
 
-      Address userPickUpAddress = Address();
-      userPickUpAddress.longitude = position.longitude;
-      userPickUpAddress.latitude = position.latitude;
-      userPickUpAddress.placeName = placeAddress;
+  //     Address userPickUpAddress = Address();
+  //     userPickUpAddress.longitude = position.longitude;
+  //     userPickUpAddress.latitude = position.latitude;
+  //     userPickUpAddress.placeName = placeAddress;
 
-      Provider.of<AppData>(context, listen: false)
-          .updatePickUpLocationAddress(userPickUpAddress);
-    }
-    return placeAddress;
-  }
+  //     Provider.of<AppData>(context, listen: false)
+  //         .updatePickUpLocationAddress(userPickUpAddress);
+  //   }
+  //   return placeAddress;
+  // }
 
   static Future<DirectionDetails?> obtainPlaceDirectionDetails(
       LatLng initialPosition, LatLng finalPosition) async {
@@ -83,22 +84,33 @@ class AssistantMethods {
     return totalLocalAmount.truncate();
   }
 
-  static void getCurrentOnlineInfo() async {
-    User? firebaseUser = FirebaseAuth.instance.currentUser;
+  // static void getCurrentOnlineInfo() async {
+  //   User? firebaseUser = FirebaseAuth.instance.currentUser;
 
-    if (firebaseUser != null) {
-      String userId = firebaseUser.uid;
-      DatabaseReference reference =
-          FirebaseDatabase.instance.ref().child("users").child(userId);
+  //   if (firebaseUser != null) {
+  //     String userId = firebaseUser.uid;
+  //     DatabaseReference reference =
+  //         FirebaseDatabase.instance.ref().child("users").child(userId);
 
-      DatabaseEvent event = await reference.once();
-      DataSnapshot dataSnapshot = event.snapshot;
+  //     DatabaseEvent event = await reference.once();
+  //     DataSnapshot dataSnapshot = event.snapshot;
 
-      if (dataSnapshot.value != null) {
-        userCurrentInfo = Users.fromSnapshot(dataSnapshot);
-      }
-    } else {
-      print('Kullanıcı giriş yapmamış');
-    }
+  //     if (dataSnapshot.value != null) {
+  //       userCurrentInfo = Users.fromSnapshot(dataSnapshot);
+  //     }
+  //   } else {
+  //     print('Kullanıcı giriş yapmamış');
+  //   }
+  // }
+
+  static void disableHomeTabLiveLocationUpdates() {
+    homeTabPageStreamSubscription!.pause();
+    Geofire.removeLocation(currentfirebaseUser.uid);
+  }
+
+  static void enableHomeTabLiveLocationUpdates() {
+    homeTabPageStreamSubscription!.resume();
+    Geofire.setLocation(currentfirebaseUser.uid, currentPosition.latitude,
+        currentPosition.longitude);
   }
 }

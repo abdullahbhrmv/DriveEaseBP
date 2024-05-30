@@ -96,7 +96,7 @@ class LoginScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               const Text(
-                "Sürücü olarak oturum açın",
+                "Sürücü | Giriş Yap",
                 style: TextStyle(fontFamily: "Brand Bold", fontSize: 24),
                 textAlign: TextAlign.center,
               ),

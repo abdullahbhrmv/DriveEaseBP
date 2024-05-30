@@ -96,7 +96,7 @@ class LoginScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               const Text(
-                "Login as a Rider",
+                "Giriş Yap",
                 style: TextStyle(fontFamily: "Brand Bold", fontSize: 24),
                 textAlign: TextAlign.center,
               ),
@@ -125,7 +125,7 @@ class LoginScreen extends StatelessWidget {
                       controller: passwordController,
                       obscureText: true,
                       decoration: const InputDecoration(
-                        labelText: "Password",
+                        labelText: "Şifre",
                         labelStyle: TextStyle(
                           fontSize: 14,
                         ),
@@ -149,7 +149,7 @@ class LoginScreen extends StatelessWidget {
                         );
                       },
                       child: const Text(
-                        'Login',
+                        'Giriş Yap',
                         style: TextStyle(
                           fontFamily: "Brand Bold",
                           fontSize: 18,

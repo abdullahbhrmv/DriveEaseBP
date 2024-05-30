@@ -129,7 +129,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     showDialog(
       context: context,
       builder: (BuildContext context) => const ProgressDialog(
-        message: "Please wait...",
+        message: "Lütfen bekleyin...",
       ),
     );
 
@@ -149,10 +149,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     pLineCoordinates.clear();
 
     if (decodedPolylinePointsResult.isNotEmpty) {
-      decodedPolylinePointsResult.forEach((PointLatLng pointLatLng) {
+      for (var pointLatLng in decodedPolylinePointsResult) {
         pLineCoordinates
             .add(LatLng(pointLatLng.latitude, pointLatLng.longitude));
-      });
+      }
     }
 
     polylineSet.clear();
@@ -251,25 +251,38 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   void locatePosition(BuildContext context) async {
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    currentPosition = position;
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      // Konum izni varsa buraya gelir
+      currentPosition = position;
 
-    LatLng latLatPosition = LatLng(position.latitude, position.longitude);
-    CameraPosition cameraPosition =
-        CameraPosition(target: latLatPosition, zoom: 14);
-    newGoogleMapController
-        .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+      LatLng latLatPosition = LatLng(position.latitude, position.longitude);
+      CameraPosition cameraPosition = CameraPosition(
+        target: latLatPosition,
+        zoom: 14,
+      );
+      newGoogleMapController
+          .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
 
-    String address =
-        await AssistantMethods.searchCoordinatedAddress(position, context);
-    print("This is your Address :: " + address);
+      String address = await AssistantMethods.searchCoordinatedAddress(
+        position,
+        context,
+      );
+      print("This is your Address :: " + address);
 
-    initGeoFireListner();
+      initGeoFireListner();
+    } catch (e) {
+      // Konum izni yoksa buraya gelir
+      print("Konum izni reddedildi: $e");
+      // Kullanıcıya izin iste
+      // Örneğin: showDialog(context: context, builder: (context) => PermissionDialog());
+    }
   }
 
   static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(41.015137, 28.979530), // Coordinates for Istanbul
+    target: LatLng(41.015137, 28.979530), // Istanbul Koordinati
     zoom: 14.4746,
   );
 
@@ -284,9 +297,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      appBar: AppBar(
-        title: const Text("Main Screen"),
-      ),
       drawer: Container(
         color: Colors.white,
         width: 255.0,
@@ -309,7 +319,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "Profile Name",
+                            "Profil İsmi",
                             style: TextStyle(
                                 fontSize: 16.0, fontFamily: "Brand-Bold"),
                           ),
@@ -325,21 +335,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               const ListTile(
                 leading: Icon(FontAwesomeIcons.history),
                 title: Text(
-                  "Ride History",
+                  "Yolculuk Geçmişi",
                   style: TextStyle(fontSize: 15.0),
                 ),
               ),
               const ListTile(
                 leading: Icon(FontAwesomeIcons.person),
                 title: Text(
-                  "Visit Profile",
-                  style: TextStyle(fontSize: 15.0),
-                ),
-              ),
-              const ListTile(
-                leading: Icon(FontAwesomeIcons.info),
-                title: Text(
-                  "About",
+                  "Profil",
                   style: TextStyle(fontSize: 15.0),
                 ),
               ),
@@ -355,7 +358,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 child: const ListTile(
                   leading: Icon(FontAwesomeIcons.signOutAlt),
                   title: Text(
-                    "Sign Out",
+                    "Çıkış Yap",
                     style: TextStyle(fontSize: 15.0),
                   ),
                 ),
@@ -377,13 +380,47 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             polylines: polylineSet,
             markers: markersSet,
             circles: circlesSet,
-            onMapCreated: (GoogleMapController controller) {
+            onMapCreated: (GoogleMapController controller) async {
               _controllerGoogleMap.complete(controller);
               newGoogleMapController = controller;
               setState(() {
                 bottomPaddingofMap = 300.0;
               });
-              locatePosition(context);
+
+              // Konum izni kontrolü yapılacak
+              LocationPermission permission =
+                  await Geolocator.checkPermission();
+              if (permission == LocationPermission.denied) {
+                // Kullanıcıdan konum izni istenir
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: const Text("Konum İzni"),
+                    content: const Text(
+                        "Uygulamayı kullanabilmek için konum izni gerekmektedir."),
+                    actions: <Widget>[
+                      TextButton(
+                        child: const Text("İzin Ver"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          // Konum izni iste
+                          Geolocator.requestPermission();
+                        },
+                      ),
+                      TextButton(
+                        child: const Text("İptal"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          // Konum izni reddedildiğinde yapılacak işlemler
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                // Konum izni varsa konum bilgileri alınır
+                locatePosition(context);
+              }
             },
           ),
           // HamburgerButton for Drawer
@@ -400,17 +437,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Colors.blue, // Arka plan rengi
                   borderRadius: BorderRadius.circular(22.0),
                   boxShadow: const [
                     BoxShadow(
                       color: Colors.black,
                       blurRadius: 6.0,
                       spreadRadius: 0.5,
-                      offset: Offset(
-                        0.7,
-                        0.7,
-                      ),
+                      offset: Offset(0.7, 0.7),
                     ),
                   ],
                 ),
@@ -459,9 +493,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     const Text(
                       "Merhaba,",
                       style: TextStyle(
-                        fontSize: 20.0,
-                        fontFamily: "Brand-Regular",
-                      ),
+                          fontSize: 20.0, fontFamily: "Brand-Regular"),
                     ),
                     const SizedBox(height: 20.0),
                     GestureDetector(
@@ -493,16 +525,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                           padding: EdgeInsets.all(12.0),
                           child: Row(
                             children: [
-                              Icon(
-                                Icons.search,
-                                color: Colors.blueAccent,
-                              ),
+                              Icon(Icons.search, color: Colors.blueAccent),
                               SizedBox(width: 10.0),
                               Text(
                                 "Nereye gitmek istersiniz?",
-                                style: TextStyle(
-                                  fontFamily: "Brand-Regular",
-                                ),
+                                style: TextStyle(fontFamily: "Brand-Regular"),
                               ),
                             ],
                           ),
@@ -528,9 +555,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                       .placeName
                                   : "Ev",
                               style: const TextStyle(
-                                fontFamily: "Brand-Regular",
-                                fontSize: 15,
-                              ),
+                                  fontFamily: "Brand-Regular", fontSize: 15),
                             ),
                             const SizedBox(height: 4.0),
                             const Text(
@@ -560,9 +585,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             Text(
                               "İş",
                               style: TextStyle(
-                                fontFamily: "Brand-Regular",
-                                fontSize: 15,
-                              ),
+                                  fontFamily: "Brand-Regular", fontSize: 15),
                             ),
                             SizedBox(height: 4.0),
                             Text(
@@ -628,7 +651,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    "Car",
+                                    "Araba",
                                     style: TextStyle(
                                       fontSize: 18.0,
                                       fontFamily: "Brand-Bold",
@@ -765,7 +788,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             repeatForever: true,
                             animatedTexts: [
                               TypewriterAnimatedText(
-                                'Requesting a ride...',
+                                'Araç istemek...',
                                 speed: const Duration(milliseconds: 500),
                               ),
                             ],
@@ -799,7 +822,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       Container(
                         width: double.infinity,
                         child: const Text(
-                          "Cancel Ride",
+                          "İptal Edin",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 12.0,
@@ -841,12 +864,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               updateAvaiableDriversOnMap();
             }
             break;
-
           case Geofire.onKeyExited:
             GeoFireAssistant.removeDirverFromList(map['key']);
             updateAvaiableDriversOnMap();
             break;
-
           case Geofire.onKeyMoved:
             NearbyAvailableDrivers nearbyAvailableDrivers =
                 NearbyAvailableDrivers(
@@ -863,7 +884,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             break;
         }
       }
-
       setState(() {});
     });
     // comment
@@ -880,13 +900,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         "assets/images/car_android.png",
       ).then((onValue) {
         nearByIcon = onValue;
-        // Icon başarıyla yüklendiğinde burada kullanabiliriz
-        // Örneğin:
-        // setState(() {
-        //   // Icon yüklendiğinde yapılacak işlemler
-        // });
       }).catchError((error) {
-        // Icon yüklenirken bir hata oluşursa, null yerine defaultMarker kullanabiliriz
         nearByIcon = BitmapDescriptor.defaultMarker;
       });
     }
@@ -897,7 +911,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       markersSet.clear();
     });
 
-    Set<Marker> tMakers = Set<Marker>();
+    Set<Marker> tMakers = <Marker>{};
     for (NearbyAvailableDrivers driver
         in GeoFireAssistant.nearbyAvailableDriversList) {
       LatLng driverAvaiablePosition = LatLng(driver.latitude, driver.longitude);

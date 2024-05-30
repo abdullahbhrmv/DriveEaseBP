@@ -1,13 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:driver_app/AllScreens/canInfoScreen.dart';
-import 'package:driver_app/configMap.dart';
-import 'package:driver_app/main.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:driver_app/AllScreens/loginScreen.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:driver_app/AllWidgets/progressDialog.dart';
+import 'package:driver_app/AllScreens/canInfoScreen.dart';
+import 'package:driver_app/configMap.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 
 class RegistrationScreen extends StatelessWidget {
   RegistrationScreen({Key? key});
@@ -16,9 +14,9 @@ class RegistrationScreen extends StatelessWidget {
 
   final TextEditingController nameTextEditingController =
       TextEditingController();
-  final TextEditingController emailTextEditingController =
-      TextEditingController();
   final TextEditingController phoneTextEditingController =
+      TextEditingController();
+  final TextEditingController emailTextEditingController =
       TextEditingController();
   final TextEditingController passwordTextEditingController =
       TextEditingController();
@@ -110,7 +108,6 @@ class RegistrationScreen extends StatelessWidget {
 
       User? user = userCredential.user;
       if (user != null) {
-        await addUserToFirestore(user);
         await addUserToRealtimeDB(user);
         currentfirebaseUser = user; // Assigning the firebaseUser here
       }
@@ -148,17 +145,11 @@ class RegistrationScreen extends StatelessWidget {
     }
   }
 
-  Future<void> addUserToFirestore(User user) async {
-    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-      'name': nameTextEditingController.text,
-      'email': emailTextEditingController.text,
-      'phone': phoneTextEditingController.text,
-    });
-  }
-
   Future<void> addUserToRealtimeDB(User user) async {
-    DatabaseReference driverRef =
-        FirebaseDatabase.instance.ref().child('users').child(user.uid);
+    DatabaseReference driverRef = FirebaseDatabase.instance
+        .ref()
+        .child('drivers')
+        .child(user.uid); // Update the reference to 'drivers'
     await driverRef.set({
       'name': nameTextEditingController.text,
       'email': emailTextEditingController.text,
@@ -184,7 +175,7 @@ class RegistrationScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               const Text(
-                "Sürücü olarak kaydolun",
+                "Sürücü | Kayıt Ol",
                 style: TextStyle(fontFamily: "Brand Bold", fontSize: 24),
                 textAlign: TextAlign.center,
               ),

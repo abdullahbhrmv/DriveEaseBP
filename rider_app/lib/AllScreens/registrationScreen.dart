@@ -81,7 +81,6 @@ class RegistrationScreen extends StatelessWidget {
       );
 
       if (userCredential.user != null) {
-        await addUserToFirestore(userCredential.user!);
         await addUserToRealtimeDB(userCredential.user!);
       }
 
@@ -117,14 +116,6 @@ class RegistrationScreen extends StatelessWidget {
     }
   }
 
-  Future<void> addUserToFirestore(User user) async {
-    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-      'name': nameTextEditingController.text,
-      'email': emailTextEditingController.text,
-      'phone': phoneTextEditingController.text,
-    });
-  }
-
   Future<void> addUserToRealtimeDB(User user) async {
     DatabaseReference dbRef =
         FirebaseDatabase.instance.ref().child('users').child(user.uid);
@@ -153,7 +144,7 @@ class RegistrationScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               const Text(
-                "Register as a Rider",
+                "Kayıt OL",
                 style: TextStyle(fontFamily: "Brand Bold", fontSize: 24),
                 textAlign: TextAlign.center,
               ),
@@ -166,7 +157,7 @@ class RegistrationScreen extends StatelessWidget {
                       controller: nameTextEditingController,
                       keyboardType: TextInputType.text,
                       decoration: const InputDecoration(
-                        labelText: "Full Name",
+                        labelText: "İsim, Soyisim",
                         labelStyle: TextStyle(fontSize: 14),
                         hintStyle: TextStyle(color: Colors.grey, fontSize: 10),
                       ),
@@ -187,7 +178,7 @@ class RegistrationScreen extends StatelessWidget {
                     IntlPhoneField(
                       controller: phoneTextEditingController,
                       decoration: const InputDecoration(
-                        labelText: 'Phone Number',
+                        labelText: 'Telefon',
                         labelStyle: TextStyle(fontSize: 14),
                         hintStyle: TextStyle(color: Colors.grey, fontSize: 10),
                       ),
@@ -202,7 +193,7 @@ class RegistrationScreen extends StatelessWidget {
                       controller: passwordTextEditingController,
                       obscureText: true,
                       decoration: const InputDecoration(
-                        labelText: "Password",
+                        labelText: "Şifre",
                         labelStyle: TextStyle(fontSize: 14),
                         hintStyle: TextStyle(color: Colors.grey, fontSize: 10),
                       ),
@@ -213,7 +204,7 @@ class RegistrationScreen extends StatelessWidget {
                       controller: confirmPasswordTextEditingController,
                       obscureText: true,
                       decoration: const InputDecoration(
-                        labelText: "Confirm Password",
+                        labelText: "Şifreyi Onayla",
                         labelStyle: TextStyle(fontSize: 14),
                         hintStyle: TextStyle(color: Colors.grey, fontSize: 10),
                       ),
@@ -292,7 +283,7 @@ class RegistrationScreen extends StatelessWidget {
                         }
                       },
                       child: const Text(
-                        'Create Account',
+                        'Kayıt Ol',
                         style: TextStyle(
                           fontFamily: "Brand Bold",
                           fontSize: 18,

@@ -20,7 +20,7 @@ void main() async {
 DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('users');
 DatabaseReference driverRef = FirebaseDatabase.instance.ref().child('drivers');
 DatabaseReference newRequestRef = FirebaseDatabase.instance.ref().child('Ride Requests');
-DatabaseReference rideRequestRef = FirebaseDatabase.instance.ref().child("drivers").child(currentfirebaseUser.uid).child("drivers");
+DatabaseReference rideRequestRef = FirebaseDatabase.instance.ref().child("drivers").child(currentfirebaseUser.uid).child("newRide");
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

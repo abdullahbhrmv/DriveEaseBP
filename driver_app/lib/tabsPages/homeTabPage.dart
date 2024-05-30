@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:driver_app/Models/drivers.dart';
 import 'package:driver_app/Notifications/pushNotificationService.dart';
+import 'package:driver_app/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -22,21 +24,11 @@ class HomeTabPage extends StatefulWidget {
 
 class _HomeTabPageState extends State<HomeTabPage> {
   final Completer<GoogleMapController> _controllerGoogleMap = Completer();
-
   late GoogleMapController newGoogleMapController;
-
-  late StreamSubscription<Position> homeTabPageStreamSubscription;
-
-  late Position currentPosition;
-
   var geoLocator = Geolocator();
-
   Color driverStatusColor = Colors.black;
-
   bool isDriverAvailable = false;
-
-  DatabaseReference? rideRequestRef;
-
+  DatabaseReference? rideRequestRef; // Nullable DatabaseReference
   String driverStatusText = "Şimdi Çevrimdışısiniz - Çevrimiçi Olun";
 
   @override
@@ -82,10 +74,35 @@ class _HomeTabPageState extends State<HomeTabPage> {
   }
 
   void getCurrentDriverInfo() async {
-    currentfirebaseUser = (await FirebaseAuth.instance.currentUser)!;
+    currentfirebaseUser = FirebaseAuth.instance.currentUser!;
     PushNotificationService pushNotificationService = PushNotificationService();
+    await pushNotificationService.initialize(context);
 
-    pushNotificationService.initialize();
+    // Get the FCM token and store it in the database
+    String? token = await pushNotificationService.getFCMToken();
+    if (token != null) {
+      FirebaseDatabase.instance
+          .ref()
+          .child('drivers/${currentfirebaseUser.uid}/token')
+          .set(token);
+    }
+
+    // Initialize driversInformation
+    DatabaseReference driverRef = FirebaseDatabase.instance
+        .ref()
+        .child('drivers/${currentfirebaseUser.uid}');
+    driverRef.once().then((DatabaseEvent event) {
+      DataSnapshot snapshot = event.snapshot;
+      if (snapshot.value != null) {
+        driversInformation = Drivers.fromSnapshot(snapshot);
+      }
+    });
+
+    // Initialize rideRequestRef
+    rideRequestRef = FirebaseDatabase.instance
+        .ref()
+        .child("driversAvailable")
+        .child(currentfirebaseUser.uid);
   }
 
   @override
@@ -102,6 +119,7 @@ class _HomeTabPageState extends State<HomeTabPage> {
           onMapCreated: (GoogleMapController controller) {
             _controllerGoogleMap.complete(controller);
             newGoogleMapController = controller;
+            locatePosition(context);
           },
         ),
         // online offline driver Container
@@ -188,18 +206,12 @@ class _HomeTabPageState extends State<HomeTabPage> {
         desiredAccuracy: LocationAccuracy.high);
     currentPosition = position;
 
-    if (currentfirebaseUser != null && currentPosition != null) {
-      Geofire.initialize("availabeDrivers");
-      Geofire.setLocation(currentfirebaseUser!.uid, currentPosition.latitude,
-          currentPosition.longitude);
+    Geofire.initialize("availabeDrivers");
+    Geofire.setLocation(currentfirebaseUser.uid, currentPosition.latitude,
+        currentPosition.longitude);
 
-      rideRequestRef = FirebaseDatabase.instance
-          .reference()
-          .child("drivers/${currentfirebaseUser!.uid}/rideRequest");
-      rideRequestRef!.set("waiting");
-    } else {
-      print('currentfirebaseUser or currentPosition is null');
-    }
+    rideRequestRef!.set("Aranıyor...");
+    rideRequestRef!.onValue.listen((event) {});
   }
 
   void getLocationLiveUpdates() {
