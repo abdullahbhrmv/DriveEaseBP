@@ -35,7 +35,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
-  void OnItemClicked(int index) {
+  @override
+  void dispose() {
+    tabController.dispose();
+    super.dispose();
+  }
+
+  void onItemClicked(int index) {
     setState(() {
       selectedIndex = index;
       tabController.index = selectedIndex;
@@ -50,7 +56,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         controller: tabController,
         children: [
           HomeTabPage(),
-          EarningTabPage(),
+          EarningsTabPage(),
           RatingTabPage(),
           ProfileTabPage(),
         ],
@@ -80,7 +86,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         selectedLabelStyle: const TextStyle(fontSize: 12.0),
         showSelectedLabels: true,
         currentIndex: selectedIndex,
-        onTap: OnItemClicked,
+        onTap: onItemClicked,
       ),
     );
   }
